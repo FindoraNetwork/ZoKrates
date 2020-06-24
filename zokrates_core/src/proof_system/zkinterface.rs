@@ -3,7 +3,7 @@ use flat_absy::flat_variable::FlatVariable;
 use ir::{self, Statement};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, Write};
+use std::io::Write;
 use zkinterface::{
     flatbuffers::{FlatBufferBuilder, WIPOffset},
     writing::{CircuitOwned, VariablesOwned},
@@ -45,7 +45,6 @@ impl ZkInterface {
         let mut out_file = File::create(proof_path).unwrap();
         generate_proof(&program, witness, &mut out_file)
     }
-
 }
 
 pub fn setup<W: Write>(program: &CompilationArtifacts<FieldPrime>, out_file: &mut W) {
