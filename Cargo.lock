@@ -19,6 +19,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aho-corasick"
+version = "0.7.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "043164d8ba5c4c3035fec9bbee8647c0261d788f3474306f93bb65901cae0e86"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "ansi_term"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -490,6 +499,15 @@ dependencies = [
  "proc-macro2 1.0.18",
  "quote 1.0.6",
  "syn 1.0.30",
+]
+
+[[package]]
+name = "flatbuffers"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea0c34f669be9911826facafe996adfda978aeee67285a13556869e2d8b8331f"
+dependencies = [
+ "smallvec 0.6.13",
 ]
 
 [[package]]
@@ -1179,11 +1197,23 @@ version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9329abc99e39129fcceabd24cf5d85b4671ef7c29c50e972bc5afe32438ec384"
 dependencies = [
- "aho-corasick",
+ "aho-corasick 0.6.10",
  "memchr",
- "regex-syntax",
- "thread_local",
+ "regex-syntax 0.5.6",
+ "thread_local 0.3.6",
  "utf8-ranges",
+]
+
+[[package]]
+name = "regex"
+version = "1.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c3780fcf44b193bc4d09f36d2a3c87b251da4a046c87795a0d35f4f927ad8e6"
+dependencies = [
+ "aho-corasick 0.7.13",
+ "memchr",
+ "regex-syntax 0.6.18",
+ "thread_local 1.0.1",
 ]
 
 [[package]]
@@ -1203,6 +1233,12 @@ checksum = "7d707a4fa2637f2dca2ef9fd02225ec7661fe01a53623c1e6515b6916511f7a7"
 dependencies = [
  "ucd-util",
 ]
+
+[[package]]
+name = "regex-syntax"
+version = "0.6.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26412eb97c6b088a6997e05f69403a802a92d520de2f8e63c2b65f9e0f47c4e8"
 
 [[package]]
 name = "remove_dir_all"
@@ -1373,6 +1409,15 @@ checksum = "c111b5bd5695e56cffe5129854aa230b39c93a305372fdbb2668ca2394eea9f8"
 
 [[package]]
 name = "smallvec"
+version = "0.6.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7b0758c52e15a8b5e3691eae6cc559f08eee9406e548a4477ba4e67770a82b6"
+dependencies = [
+ "maybe-uninit",
+]
+
+[[package]]
+name = "smallvec"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7cb5678e1615754284ec264d9bb5b4c27d2018577fd90ac0ceb578591ed5ee4"
@@ -1460,6 +1505,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "thread_local"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d40c6d1b69745a6ec6fb1ca717914848da4b44ae29d9b3080cbee91d72a69b14"
+dependencies = [
+ "lazy_static",
+]
+
+[[package]]
 name = "tiny-keccak"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1507,7 +1561,7 @@ version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5479532badd04e128284890390c1e876ef7a993d0570b3597ae43dfa1d59afa4"
 dependencies = [
- "smallvec",
+ "smallvec 1.4.0",
 ]
 
 [[package]]
@@ -1718,6 +1772,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
+name = "zkinterface"
+version = "1.0.6"
+source = "git+https://github.com/QED-it/zkinterface?tag=v1.0.6#7b6185d2e61b1772068703060c86abc13af1fcf8"
+dependencies = [
+ "cmake",
+ "flatbuffers",
+ "regex 1.3.9",
+]
+
+[[package]]
 name = "zokrates_abi"
 version = "0.1.1"
 dependencies = [
@@ -1737,7 +1801,7 @@ dependencies = [
  "clap",
  "fs_extra",
  "glob 0.2.11",
- "regex",
+ "regex 0.2.11",
  "serde_json",
  "tempdir",
  "zokrates_abi",
@@ -1765,13 +1829,14 @@ dependencies = [
  "pairing_ce",
  "rand 0.4.6",
  "reduce",
- "regex",
+ "regex 0.2.11",
  "serde",
  "serde_bytes",
  "serde_derive",
  "serde_json",
  "typed-arena",
  "wasm-bindgen-test",
+ "zkinterface",
  "zokrates_embed",
  "zokrates_field",
  "zokrates_pest_ast",

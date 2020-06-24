@@ -1,5 +1,6 @@
 mod bn128;
 
+mod zkinterface;
 use zokrates_field::field::FieldPrime;
 
 pub use self::bn128::G16;
