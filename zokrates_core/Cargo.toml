@@ -33,7 +33,8 @@ zokrates_embed = { path = "../zokrates_embed" }
 rand = "0.4"
 csv = "1"
 bellman_ce = { version = "^0.3", default-features = false }
-zkinterface = {git ="https://github.com/findoraorg/zkinterface.git", branch="findora" }
+# zkinterface = {git ="https://github.com/findoraorg/zkinterface.git", branch="findora" }
+zkinterface = {path = "../../zkinterface/rust" }
 
 [dev-dependencies]
 glob = "0.2.11"

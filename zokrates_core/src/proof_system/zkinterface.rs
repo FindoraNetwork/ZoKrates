@@ -270,6 +270,7 @@ fn r1cs_program<T: Field>(
     let mut variables: HashMap<FlatVariable, usize> = HashMap::new();
     provide_variable_idx(&mut variables, &FlatVariable::one());
 
+    // Store the public inputs variables
     for x in prog
         .prog()
         .clone()
@@ -296,19 +297,42 @@ fn r1cs_program<T: Field>(
     // position where private part of witness starts
     let private_inputs_offset = variables.len();
 
+    // Store the private inputs variables
+    for x in prog
+        .prog()
+        .clone()
+        .main
+        .arguments
+        .iter()
+        .enumerate()
+        .filter(|(index, _)| prog.prog().clone().private[*index])
+    // We select the private inputs
+    {
+        provide_variable_idx(&mut variables, &x.1);
+    }
+
     // first pass through statements to populate `variables`
     for (quad, lin) in main.statements.iter().filter_map(|s| match s {
         Statement::Constraint(quad, lin) => Some((quad, lin)),
         Statement::Directive(..) => None,
     }) {
         for (k, _) in &quad.left.0 {
-            provide_variable_idx(&mut variables, &k);
+            if variables.get(k).is_none() {
+                // A new variable has been found
+                provide_variable_idx(&mut variables, &k);
+            }
         }
         for (k, _) in &quad.right.0 {
-            provide_variable_idx(&mut variables, &k);
+            if variables.get(k).is_none() {
+                // A new variable has been found
+                provide_variable_idx(&mut variables, &k);
+            }
         }
         for (k, _) in &lin.0 {
-            provide_variable_idx(&mut variables, &k);
+            if variables.get(k).is_none() {
+                // A new variable has been found
+                provide_variable_idx(&mut variables, &k);
+            }
         }
     }
 
@@ -449,17 +473,17 @@ pub mod tests {
                     Constraint {
                         a: vec![Term { id: 1, value: one }], // x
                         b: vec![Term { id: 1, value: one }], // x
-                        c: vec![Term { id: 3, value: one }], // xx
+                        c: vec![Term { id: 4, value: one }], // xx
                     },
                     Constraint {
-                        a: vec![Term { id: 4, value: one }], // y
-                        b: vec![Term { id: 4, value: one }], // y
+                        a: vec![Term { id: 3, value: one }], // y
+                        b: vec![Term { id: 3, value: one }], // y
                         c: vec![Term { id: 5, value: one }], // yy
                     },
                     Constraint {
                         a: vec![Term { id: 0, value: one }], // 1
                         b: vec![
-                            Term { id: 3, value: one },
+                            Term { id: 4, value: one },
                             Term { id: 5, value: one },
                             Term {
                                 id: 0,
@@ -518,11 +542,11 @@ pub mod tests {
                 vec![
                     Variable {
                         id: 3,
-                        value: &encode(3 * 3)
+                        value: &encode(4)
                     }, // xx
                     Variable {
                         id: 4,
-                        value: &encode(4)
+                        value: &encode(3 * 3)
                     }, // y
                     Variable {
                         id: 5,
