@@ -53,6 +53,12 @@ impl Interpreter {
                     false => {
                         let lhs_value = quad.evaluate(&witness).unwrap();
                         let rhs_value = lin.evaluate(&witness).unwrap();
+
+                        if lin.0.is_empty() {
+                            println!("empty c! => {:?}", statement);
+                            println!("rhs_value: {:?}", rhs_value);
+                        }
+
                         if lhs_value != rhs_value {
                             return Err(Error::UnsatisfiedConstraint {
                                 left: lhs_value.to_dec_string(),

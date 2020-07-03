@@ -1,6 +1,6 @@
 use compile::CompilationArtifacts;
 use flat_absy::flat_variable::FlatVariable;
-use ir::{self, Statement};
+use ir::{self, LinComb, Statement};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -13,6 +13,8 @@ use zkinterface::{
     },
 };
 
+use absy::Symbol::Flat;
+use std::env::var;
 use zokrates_field::field::{Field, FieldPrime};
 
 pub static FIELD_LENGTH: usize = 32;
@@ -289,6 +291,7 @@ fn r1cs_program<T: Field>(
     //~out are added after main's arguments as we want variables (columns)
     //in the r1cs to be aligned like "public inputs | private inputs"
     let main_return_count = main.returns.len();
+    println!("main_return_count:{}\n", main_return_count);
 
     for i in 0..main_return_count {
         provide_variable_idx(&mut variables, &FlatVariable::public(i));
@@ -347,6 +350,7 @@ fn r1cs_program<T: Field>(
     }) {
         a.push(
             quad.left
+                .clone()
                 .0
                 .into_iter()
                 .map(|(k, v)| (variables.get(&k).unwrap().clone(), v))
@@ -354,17 +358,25 @@ fn r1cs_program<T: Field>(
         );
         b.push(
             quad.right
+                .clone()
                 .0
                 .into_iter()
                 .map(|(k, v)| (variables.get(&k).unwrap().clone(), v))
                 .collect(),
         );
-        c.push(
-            lin.0
-                .into_iter()
-                .map(|(k, v)| (variables.get(&k).unwrap().clone(), v))
-                .collect(),
-        );
+
+        if lin.0.is_empty() {
+            // Enter the linear combation [var0=0]
+            let zero_lin_comb = vec![(0, T::zero())];
+            c.push(zero_lin_comb);
+        } else {
+            c.push(
+                lin.0
+                    .into_iter()
+                    .map(|(k, v)| (variables.get(&k).unwrap().clone(), v))
+                    .collect(),
+            );
+        }
     }
 
     // Convert map back into list ordered by index
