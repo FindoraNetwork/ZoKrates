@@ -23,6 +23,13 @@ pub struct Computation<T: Field> {
 }
 
 impl<T: Field> Computation<T> {
+    pub fn default(program: Prog<T>) -> Self {
+        Computation {
+            program: program,
+            witness: None,
+        }
+    }
+
     pub fn with_witness(program: Prog<T>, witness: Witness<T>) -> Self {
         Computation {
             program,
