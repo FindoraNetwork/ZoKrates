@@ -4,7 +4,7 @@ mod gm17;
 #[cfg(feature = "libsnark")]
 mod pghr13;
 
-mod utils;
+pub mod utils;
 
 pub use self::g16::G16;
 #[cfg(feature = "libsnark")]

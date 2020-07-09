@@ -12,7 +12,7 @@ extern crate bellman_ce as bellman;
 extern crate bincode;
 extern crate ff_ce as ff;
 extern crate lazy_static;
-extern crate pairing_ce as pairing;
+pub extern crate pairing_ce as pairing;
 extern crate regex;
 extern crate zokrates_embed;
 extern crate zokrates_field;

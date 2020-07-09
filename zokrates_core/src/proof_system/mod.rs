@@ -1,4 +1,4 @@
-mod bn128;
+pub mod bn128;
 
 use zokrates_field::field::FieldPrime;
 
