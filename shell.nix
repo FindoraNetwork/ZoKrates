@@ -36,6 +36,7 @@ stdenv.mkDerivation {
   shellHook = ''
       export LOCAL=`pwd`
       export ZOKRATES_HOME="$LOCAL/zokrates_stdlib/stdlib";
+      export ZOKRATES_BIN="$LOCAL/target/release/zokrates";
     '';
 }
 
