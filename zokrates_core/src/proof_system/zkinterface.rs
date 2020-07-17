@@ -16,6 +16,7 @@ use zkinterface::{
 use absy::Symbol::Flat;
 use std::env::var;
 use zokrates_field::field::{Field, FieldPrime};
+use proof_system::{ProofSystem, SetupKeypair};
 
 pub static FIELD_LENGTH: usize = 32;
 
@@ -29,9 +30,14 @@ impl ZkInterface {
     }
 }
 
-impl ZkInterface {
+const ZK_INTERFACE_PK_PATH: &str = "/tmp/zk_int_pk";
+const ZK_INTERFACE_PROOF_PATH: &str = "/tmp/zk_int_proof";
+
+impl ProofSystem for ZkInterface {
+
     #[allow(dead_code)]
-    fn setup(&self, program: CompilationArtifacts<FieldPrime>, pk_path: &str, _vk_path: &str) {
+    fn setup(&self, program: ir::Prog<FieldPrime>) -> SetupKeypair{
+        let pk_path = ZK_INTERFACE_PK_PATH;
         let mut out_file = File::create(pk_path).unwrap();
         setup(&program, &mut out_file)
     }
@@ -39,17 +45,22 @@ impl ZkInterface {
     #[allow(dead_code)]
     fn generate_proof(
         &self,
-        program: CompilationArtifacts<FieldPrime>,
+        program: ir::Prog<FieldPrime>,
         witness: ir::Witness<FieldPrime>,
-        _pk_path: &str,
-        proof_path: &str,
-    ) -> bool {
+        _proving_key: Vec<u8>,
+    ) -> String {
+
+        let proof_path = ZK_INTERFACE_PROOF_PATH;
         let mut out_file = File::create(proof_path).unwrap();
         generate_proof(&program, witness, &mut out_file)
     }
+
+    fn export_solidity_verifier(&self, vk: String, is_abiv2: bool) -> String {
+        unimplemented!()
+    }
 }
 
-pub fn setup<W: Write>(program: &CompilationArtifacts<FieldPrime>, out_file: &mut W) {
+pub fn setup<W: Write>(program: &ir::Prog<FieldPrime>, out_file: &mut W) -> SetupKeypair{
     // transform to R1CS
     let (variables, first_local_id, a, b, c) = r1cs_program(program);
     let free_variable_id = variables.len() as u64;
@@ -65,13 +76,15 @@ pub fn setup<W: Write>(program: &CompilationArtifacts<FieldPrime>, out_file: &mu
 
     // Write R1CSConstraints message.
     write_r1cs(&a, &b, &c, out_file);
+
+    SetupKeypair::from(String::from(""), [0_u8].to_vec())
 }
 
 pub fn generate_proof<W: Write>(
-    program: &CompilationArtifacts<FieldPrime>,
+    program: &ir::Prog<FieldPrime>,
     witness: ir::Witness<FieldPrime>,
     out_file: &mut W,
-) -> bool {
+) -> String {
     let (public_inputs_arr, private_inputs_arr) = prepare_generate_proof(program, witness);
 
     let first_local_id = public_inputs_arr.len() as u64;
@@ -89,7 +102,7 @@ pub fn generate_proof<W: Write>(
     // Write assignment to local variables.
     write_assignment(first_local_id as u64, &private_inputs_arr, out_file);
 
-    true
+    String::from("")
 }
 
 fn write_r1cs<W: Write>(
@@ -240,7 +253,7 @@ fn write_circuit<W: Write>(
 }
 
 fn prepare_generate_proof<T: Field>(
-    program: &CompilationArtifacts<T>,
+    program: &ir::Prog<FieldPrime>,
     witness: ir::Witness<T>,
 ) -> (Vec<T>, Vec<T>) {
     // recover variable order from the program
@@ -261,7 +274,7 @@ fn provide_variable_idx(variables: &mut HashMap<FlatVariable, usize>, var: &Flat
 }
 
 fn r1cs_program<T: Field>(
-    prog: &CompilationArtifacts<T>,
+    prog: &ir::Prog<T>,
 ) -> (
     Vec<FlatVariable>,
     usize,
@@ -273,19 +286,18 @@ fn r1cs_program<T: Field>(
     provide_variable_idx(&mut variables, &FlatVariable::one());
 
     for x in prog
-        .prog()
         .clone()
         .main
         .arguments
         .iter()
         .enumerate()
-        .filter(|(index, _)| !prog.prog().clone().private[*index])
+        .filter(|(index, _)| !prog.clone().private[*index])
     {
         provide_variable_idx(&mut variables, &x.1);
     }
 
     //Only the main function is relevant in this step, since all calls to other functions were resolved during flattening
-    let main = prog.prog().clone().main;
+    let main = prog.clone().main;
 
     //~out are added after main's arguments as we want variables (columns)
     //in the r1cs to be aligned like "public inputs | private inputs"
@@ -407,7 +419,7 @@ pub mod tests {
         {
             let mut buf = Vec::<u8>::new();
 
-            setup(&program, &mut buf);
+            setup(&program.prog(), &mut buf);
 
             let mut messages = Messages::new(0);
             messages.push_message(buf).unwrap();
@@ -496,7 +508,7 @@ pub mod tests {
         {
             let mut buf = Vec::<u8>::new();
 
-            generate_proof(&program, witness, &mut buf);
+            generate_proof(&program.prog(), witness, &mut buf);
 
             let mut messages = Messages::new(0);
             messages.push_message(buf).unwrap();
