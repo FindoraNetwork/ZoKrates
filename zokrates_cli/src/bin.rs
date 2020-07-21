@@ -15,12 +15,12 @@ use std::string::String;
 use zokrates_abi::Encode;
 use zokrates_core::compile::{compile, CompilationArtifacts, CompileError};
 use zokrates_core::ir;
+use zokrates_core::proof_system::zkinterface::ZkInterface;
 use zokrates_core::proof_system::*;
 use zokrates_core::typed_absy::abi::Abi;
 use zokrates_core::typed_absy::{types::Signature, Type};
 use zokrates_field::field::{Field, FieldPrime};
 use zokrates_fs_resolver::resolve as fs_resolve;
-use zokrates_core::proof_system::zkinterface::ZkInterface;
 
 fn main() {
     cli().unwrap_or_else(|e| {

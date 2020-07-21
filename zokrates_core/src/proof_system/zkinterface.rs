@@ -1,6 +1,5 @@
-use compile::CompilationArtifacts;
 use flat_absy::flat_variable::FlatVariable;
-use ir::{self, LinComb, Statement};
+use ir::{self, Statement};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -13,10 +12,8 @@ use zkinterface::{
     },
 };
 
-use absy::Symbol::Flat;
-use std::env::var;
-use zokrates_field::field::{Field, FieldPrime};
 use proof_system::{ProofSystem, SetupKeypair};
+use zokrates_field::field::{Field, FieldPrime};
 
 pub static FIELD_LENGTH: usize = 32;
 
@@ -30,16 +27,17 @@ impl ZkInterface {
     }
 }
 
-const ZK_INTERFACE_PK_PATH: &str = "/tmp/zk_int_pk";
-const ZK_INTERFACE_PROOF_PATH: &str = "/tmp/zk_int_proof";
+const ZK_INTERFACE_R1CS_PATH: &str = "/tmp/zk_int_r1cs";
+const ZK_INTERFACE_WITNESS_PATH: &str = "/tmp/zk_int_witness";
 
 impl ProofSystem for ZkInterface {
-
     #[allow(dead_code)]
-    fn setup(&self, program: ir::Prog<FieldPrime>) -> SetupKeypair{
-        let pk_path = ZK_INTERFACE_PK_PATH;
+    fn setup(&self, program: ir::Prog<FieldPrime>) -> SetupKeypair {
+        let pk_path = ZK_INTERFACE_R1CS_PATH;
         let mut out_file = File::create(pk_path).unwrap();
-        setup(&program, &mut out_file)
+        let key_pair = setup(&program, &mut out_file);
+        println!("The R1CS file can be found at {}", ZK_INTERFACE_R1CS_PATH);
+        key_pair
     }
 
     #[allow(dead_code)]
@@ -49,18 +47,22 @@ impl ProofSystem for ZkInterface {
         witness: ir::Witness<FieldPrime>,
         _proving_key: Vec<u8>,
     ) -> String {
-
-        let proof_path = ZK_INTERFACE_PROOF_PATH;
+        let proof_path = ZK_INTERFACE_WITNESS_PATH;
         let mut out_file = File::create(proof_path).unwrap();
-        generate_proof(&program, witness, &mut out_file)
+        let proof = generate_proof(&program, witness, &mut out_file);
+        println!(
+            "The witness file can be found at {}",
+            ZK_INTERFACE_WITNESS_PATH
+        );
+        proof
     }
 
-    fn export_solidity_verifier(&self, vk: String, is_abiv2: bool) -> String {
+    fn export_solidity_verifier(&self, _vk: String, _is_abiv2: bool) -> String {
         unimplemented!()
     }
 }
 
-pub fn setup<W: Write>(program: &ir::Prog<FieldPrime>, out_file: &mut W) -> SetupKeypair{
+pub fn setup<W: Write>(program: &ir::Prog<FieldPrime>, out_file: &mut W) -> SetupKeypair {
     // transform to R1CS
     let (variables, first_local_id, a, b, c) = r1cs_program(program);
     let free_variable_id = variables.len() as u64;
@@ -354,7 +356,7 @@ fn r1cs_program<T: Field>(
         );
 
         if lin.0.is_empty() {
-            // Enter the linear combation [var0=0]
+            // Enter the linear combination [var0=0]
             let zero_lin_comb = vec![(0, T::zero())];
             c.push(zero_lin_comb);
         } else {
@@ -371,7 +373,7 @@ fn r1cs_program<T: Field>(
     let mut variables_list = vec![FlatVariable::new(0); variables.len()];
     for (k, v) in variables.drain() {
         assert_eq!(variables_list[v], FlatVariable::new(0));
-        std::mem::replace(&mut variables_list[v], k);
+        let _ = std::mem::replace(&mut variables_list[v], k);
     }
     (variables_list, private_inputs_offset, a, b, c)
 }

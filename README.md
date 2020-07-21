@@ -114,5 +114,5 @@ The actual proof will be obtained by some other backend.
 > $ZOKRATES_BIN generate-proof -s zkinterface
 ```
 
-
-The intermediary representation computed by zkinterface can be found at `/tmp/zk_int_proof`.
+* The intermediary representation for the **r1cs** computed by zkinterface can be found at `/tmp/zk_int_r1cs`.
+* The intermediary representation for the **witness** computed by zkinterface can be found at `/tmp/zk_int_witness`.
