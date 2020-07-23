@@ -114,5 +114,11 @@ The actual proof will be obtained by some other backend.
 > $ZOKRATES_BIN generate-proof -s zkinterface
 ```
 
-* The intermediary representation for the **r1cs** computed by zkinterface can be found at `/tmp/zk_int_r1cs`.
-* The intermediary representation for the **witness** computed by zkinterface can be found at `/tmp/zk_int_witness`.
+* The intermediary representation for the **r1cs** constraints and the public inputs computed by zkinterface can be found at `/tmp/zk_int_verifier.zik`.
+* The intermediary representation for the **witness** computed by zkinterface can be found at `/tmp/zk_int_prover.zik`.
+
+You can also do all these steps in one go:
+```shell script
+> cd scripts
+> ./gen_zk_int_data_from_circuit.sh <path_to_circuit> <inputs>
+```

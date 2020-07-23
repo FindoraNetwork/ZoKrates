@@ -27,16 +27,19 @@ impl ZkInterface {
     }
 }
 
-const ZK_INTERFACE_R1CS_PATH: &str = "/tmp/zk_int_r1cs";
-const ZK_INTERFACE_WITNESS_PATH: &str = "/tmp/zk_int_witness";
+const ZK_INTERFACE_VERIFIER_DATA_PATH: &str = "/tmp/zk_int_verifier.zik";
+const ZK_INTERFACE_PROVER_DATA_PATH: &str = "/tmp/zk_int_prover.zik";
 
 impl ProofSystem for ZkInterface {
     #[allow(dead_code)]
     fn setup(&self, program: ir::Prog<FieldPrime>) -> SetupKeypair {
-        let pk_path = ZK_INTERFACE_R1CS_PATH;
+        let pk_path = ZK_INTERFACE_VERIFIER_DATA_PATH;
         let mut out_file = File::create(pk_path).unwrap();
         let key_pair = setup(&program, &mut out_file);
-        println!("The R1CS file can be found at {}", ZK_INTERFACE_R1CS_PATH);
+        println!(
+            "The R1CS file can be found at {}",
+            ZK_INTERFACE_VERIFIER_DATA_PATH
+        );
         key_pair
     }
 
@@ -47,12 +50,12 @@ impl ProofSystem for ZkInterface {
         witness: ir::Witness<FieldPrime>,
         _proving_key: Vec<u8>,
     ) -> String {
-        let proof_path = ZK_INTERFACE_WITNESS_PATH;
+        let proof_path = ZK_INTERFACE_PROVER_DATA_PATH;
         let mut out_file = File::create(proof_path).unwrap();
         let proof = generate_proof(&program, witness, &mut out_file);
         println!(
             "The witness file can be found at {}",
-            ZK_INTERFACE_WITNESS_PATH
+            ZK_INTERFACE_PROVER_DATA_PATH
         );
         proof
     }
@@ -99,6 +102,17 @@ pub fn generate_proof<W: Write>(
         Some(&public_inputs_arr),
         false,
         out_file,
+    );
+
+    // We write the public inputs to the file that will be fed to the verifier
+    let r1cs_path = ZK_INTERFACE_VERIFIER_DATA_PATH;
+    let mut out_file_r1cs = File::create(r1cs_path).unwrap();
+    write_circuit(
+        first_local_id,
+        free_variable_id,
+        Some(&public_inputs_arr),
+        false,
+        &mut out_file_r1cs,
     );
 
     // Write assignment to local variables.
