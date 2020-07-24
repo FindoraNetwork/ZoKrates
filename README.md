@@ -83,42 +83,65 @@ OPTIONS:
 
 Note that *zkinterface* is available as a proving scheme.
 
-* Compile a circuit
+
+In order to compile a circuit and generate the zkinterface data to be used by
+some backend do the following: 
 
 ```shell script
-> $ZOKRATES_BIN compile -i <path_to_circuit>
-
+> ./scripts/gen_zk_int_data_from_circuit.sh <path_to_circuit> <field_size> <inputs>
 ```
 
-* Run the setup using *zkinterface* as a proving scheme.
+where
+* `path_to_circuit` is the path to a file containing the description of a circuit.
+*  `field_size` can take two options "BN" or "CURVE25519". BN128 must be picked if the 
+backend uses some BN curve and CURVE25519 if the backend uses the Curve25519 curve.
+* `inputs` contains the list of **public** inputs passed to the circuits.
 
-```shell script
-> $ZOKRATES_BIN setup -s zkinterface
-
-```
-
-* Compute the witness
-
-```shell script
-> $ZOKRATES_BIN compute-witness -a 1 2
+Example:
 
 ```
+> ./scripts/gen_zk_int_data_from_circuit.sh zokrates_cli/examples/add.zok BN 3
 
-Recall that argument passed to the circuit come after the "-a" option.
+************************************************
+* Generator of zkinterface data from circuit ***
+************************************************
+Public inputs: 3.
+Path to circuit: zokrates_cli/examples/add.zok
+Compiling zokrates_cli/examples/add.zok
 
-* Generate the proof using zkinterface as a proving scheme 
-(indeed in our case only some intermediary information containing the R1CS + witness will be computed).
-The actual proof will be obtained by some other backend.
+field_size_str: 21888242871839275222246405745257275088548364400416034343698204186575808495617
+Compiled program:
+def main(_0) -> (1):
+	(1 * ~one) * (28 * ~one + 10 * _0) == 1 * ~out_0
+	 return ~out_0
+Compiled code written to 'out'
+Human readable code to 'out.ztf'
+Number of constraints: 1
+Performing setup...
+field_size_str: 21888242871839275222246405745257275088548364400416034343698204186575808495617
+def main(_0) -> (1):
+	(1 * ~one) * (28 * ~one + 10 * _0) == 1 * ~out_0
+	 return ~out_0
+main_return_count:1
 
-```shell script
-> $ZOKRATES_BIN generate-proof -s zkinterface
+The R1CS file can be found at /tmp/zk_int_verifier.zik
+Setup completed.
+Computing witness...
+field_size_str: 21888242871839275222246405745257275088548364400416034343698204186575808495617
+def main(_0) -> (1):
+	(1 * ~one) * (28 * ~one + 10 * _0) == 1 * ~out_0
+	 return ~out_0
+
+Witness: 
+
+["58"]
+Generating proof...
+field_size_str: 21888242871839275222246405745257275088548364400416034343698204186575808495617
+main_return_count:1
+
+The witness file can be found at /tmp/zk_int_prover.zik
+generate-proof successful: 
 ```
 
-* The intermediary representation for the **r1cs** constraints and the public inputs computed by zkinterface can be found at `/tmp/zk_int_verifier.zik`.
-* The intermediary representation for the **witness** computed by zkinterface can be found at `/tmp/zk_int_prover.zik`.
-
-You can also do all these steps in one go:
-```shell script
-> cd scripts
-> ./gen_zk_int_data_from_circuit.sh <path_to_circuit> <inputs>
-```
+Finally the information containing the R1CS and the public inputs can be found at `/tmp/zk_int_verifier.zik`,
+and the information containing the witness at `/tmp/zk_int_prover.zik`.
