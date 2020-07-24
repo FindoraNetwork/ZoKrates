@@ -35,6 +35,7 @@ stdenv.mkDerivation {
 
   shellHook = ''
       export LOCAL=`pwd`
+      export FIELD_SIZE_PATH=$LOCAL/field_size.txt;
       export ZOKRATES_HOME="$LOCAL/zokrates_stdlib/stdlib";
       export ZOKRATES_BIN="$LOCAL/target/release/zokrates";
     '';

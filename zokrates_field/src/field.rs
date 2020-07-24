@@ -13,17 +13,29 @@ use num_integer::Integer;
 use num_traits::{One, Zero};
 use serde_derive::{Deserialize, Serialize};
 use std::convert::From;
+use std::env;
 use std::fmt;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
 use std::ops::{Add, Div, Mul, Sub};
 
+use std::fs;
+
+// Fetch the field size from a file or return a default value if the file does not exists
 lazy_static! {
-    static ref P: BigInt = BigInt::parse_bytes(
-        b"21888242871839275222246405745257275088548364400416034343698204186575808495617",
-        10
-    )
-    .unwrap();
+    static ref P: BigInt = {
+        let field_size_path = env::var("FIELD_SIZE_PATH").unwrap();
+        let field_size_str_res = fs::read_to_string(field_size_path);
+        let field_size_str : String;
+        if field_size_str_res.is_err(){ // Default value for ZoKrates field
+            field_size_str = String::from("21888242871839275222246405745257275088548364400416034343698204186575808495617");
+        }
+        else { // Read field size number from file
+            field_size_str = field_size_str_res.unwrap().trim_end().to_string();
+        }
+        println!("field_size_str: {}", field_size_str);
+        BigInt::parse_bytes(field_size_str.as_bytes(), 10).unwrap()
+    };
 }
 
 pub trait Pow<RHS> {
